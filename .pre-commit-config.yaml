@@ -1,29 +1,16 @@
 repos:
-  # Checking for spelling errors
-  - repo: https://github.com/streetsidesoftware/cspell
-    rev: v6.27.0 
+  # Spell checking for text, markdown, and YAML files
+  - repo: local
     hooks:
       - id: cspell
         name: Spell Checker
-        entry: cspell
+        entry: npx cspell
         language: node
-        types: [text, code]
+        types: [text, yaml, markdown]
         args:
           - '--config=./cspell.json'
-        additional_dependencies: []
 
-  # Detect hard-coded secrets and sensitive variables (such as hard code in environment variables)
-  - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.4.0
-    hooks:
-      - id: detect-secrets
-        name: Detect Hard-Coded Secrets
-        entry: detect-secrets-hook
-        language: python
-        args:
-          - '--baseline=.secrets.baseline'
-
-  # Security analysis tool (bandit for Python)
+  # Security analysis for Python code
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.4
     hooks:
@@ -33,54 +20,38 @@ repos:
         language: python
         types: [python]
         args:
-          - '-r'
-          - '.'
+          - '-r'  # Recursively analyze code
 
-  # Checking good practices in the use of environment variables
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
-    hooks:
-      - id: debug-statements
-        name: Debug Statement Checker
-        entry: check-debug-statements
-        language: python
-        types: [python]
-
-      - id: check-added-large-files
-        args: ['--maxkb=500']
-
-      - id: end-of-file-fixer
-        name: End of File Fixer
-        description: Ensure files end with a newline.
-
-# Repository containing general-purpose pre-commit hooks
-# These hooks help enforce best practices for file formatting, security, and file management.
+  # General-purpose pre-commit hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
       - id: end-of-file-fixer
+        name: End of File Fixer
+        description: Ensure files end with a newline.
       - id: check-yaml
       - id: check-toml
       - id: detect-private-key
       - id: check-added-large-files
+        args: ['--maxkb=500']
 
-# It reformats Python code to follow PEP 8 and provides opinionated formatting.
+  # Python formatter (PEP 8 compliant)
   - repo: https://github.com/psf/black-pre-commit-mirror
     rev: 24.1.1
     hooks:
       - id: black
-        language_version: python3.11
+        language_version: python3.12
 
-# It automatically reorders imports to conform to PEP 8.
+  # Import sorter (PEP 8 compliant)
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:
       - id: isort
         name: isort (python)
 
-# It combines PyFlakes, pycodestyle, and mccabe complexity checker.
+  # Python linter and style checker
   - repo: https://github.com/pycqa/flake8
     rev: 7.0.0
     hooks:

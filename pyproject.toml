@@ -10,6 +10,18 @@ python = "^3.9"
 flake8 = "^7.1.1"
 black = "^24.10.0"
 isort = "^5.13.2"
+taskipy = "^1.14.1"
+pre-commit = "^4.0.1"
+
+[tool.isort]
+profile = "black"
+
+[tool.taskipy.tasks]
+format = """
+isort main.py
+black main.py
+flake8 main.py
+"""
 
 
 [build-system]

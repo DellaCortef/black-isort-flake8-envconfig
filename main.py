@@ -2,15 +2,16 @@
 
 import os
 import time
+from collections import defaultdict
+from pathlib import Path
+
 import duckdb
 import pandas as pd
-from pathlib import Path
-from collections import defaultdict
 from pyspark.sql import SparkSession
-
 
 # CSV file to save benchmark results
 RESULTS_FILE = "benchmark_results.csv"
+
 
 def benchmark_tool(tool_name, dataset_size, processing_function, dataset_path):
     """
@@ -44,7 +45,9 @@ def benchmark_tool(tool_name, dataset_size, processing_function, dataset_path):
     else:
         results_df.to_csv(RESULTS_FILE, index=False)
 
-    print(f"{tool_name} completed on {dataset_size} dataset in {elapsed_time:.2f} seconds.")
+    print(
+        f"{tool_name} completed on {dataset_size} dataset in {elapsed_time:.2f} seconds."
+    )
 
 
 def sort_results_by_dataset_size(results_file):
@@ -53,19 +56,21 @@ def sort_results_by_dataset_size(results_file):
     """
     # Define the order for sorting dataset sizes
     size_order = ["10K", "100K", "1M", "2M", "3M", "10M", "100M"]
-    
+
     # Read the CSV into a DataFrame
     df = pd.read_csv(results_file)
-    
+
     # Convert the 'Dataset Size' column to a categorical type for sorting
-    df["Dataset Size"] = pd.Categorical(df["Dataset Size"], categories=size_order, ordered=True)
-    
+    df["Dataset Size"] = pd.Categorical(
+        df["Dataset Size"], categories=size_order, ordered=True
+    )
+
     # Sort the DataFrame by 'Dataset Size'
     df_sorted = df.sort_values(by="Dataset Size")
-    
+
     # Save the sorted results back to the CSV file
     df_sorted.to_csv(results_file, index=False)
-    
+
     print(f"Benchmark results sorted by dataset size and saved to {results_file}.")
 
 
@@ -74,7 +79,9 @@ def process_with_pandas(file_path):
     Example processing function using Pandas.
     Reads the dataset and calculates statistics.
     """
-    df = pd.read_csv(file_path, sep=";", header=None, names=["station_city_name", "temperature"])
+    df = pd.read_csv(
+        file_path, sep=";", header=None, names=["station_city_name", "temperature"]
+    )
     print(f"Columns in DataFrame: {df.columns}")
     stats = df.groupby("station_city_name")["temperature"].agg(["min", "mean", "max"])
     return stats
@@ -108,19 +115,22 @@ def process_with_spark(file_path):
     from pyspark.sql import SparkSession
 
     # Initialize Spark session with additional configuration
-    spark = SparkSession.builder \
-        .appName("Benchmarking") \
-        .config("spark.ui.showConsoleProgress", "false") \
-        .config("spark.executor.memory", "2g") \
-        .config("spark.driver.extraJavaOptions", "-Djava.security.manager=allow") \
+    spark = (
+        SparkSession.builder.appName("Benchmarking")
+        .config("spark.ui.showConsoleProgress", "false")
+        .config("spark.executor.memory", "2g")
+        .config("spark.driver.extraJavaOptions", "-Djava.security.manager=allow")
         .getOrCreate()
+    )
 
     # Convert Path object to string
     file_path_str = str(file_path)
 
     # Read the CSV file into a Spark DataFrame
     df = spark.read.csv(file_path_str, sep=";", header=False, inferSchema=True)
-    df = df.withColumnRenamed("_c0", "station_city_name").withColumnRenamed("_c1", "temperature")
+    df = df.withColumnRenamed("_c0", "station_city_name").withColumnRenamed(
+        "_c1", "temperature"
+    )
 
     # Group by and calculate statistics
     stats = df.groupBy("station_city_name").agg(
@@ -145,11 +155,10 @@ def process_with_python(file_path):
             temperature_per_station[station].append(float(temperature))
 
     # Calculate statistics
-    stats = {station: {
-        "min": min(temps),
-        "mean": sum(temps) / len(temps),
-        "max": max(temps)
-    } for station, temps in temperature_per_station.items()}
+    stats = {
+        station: {"min": min(temps), "mean": sum(temps) / len(temps), "max": max(temps)}
+        for station, temps in temperature_per_station.items()
+    }
     return stats
 
 
@@ -171,7 +180,10 @@ def remove_duplicates_from_results(results_file):
 
 import threading
 
-def benchmark_tool(tool_name, dataset_size, processing_function, dataset_path, timeout=300):
+
+def benchmark_tool(
+    tool_name, dataset_size, processing_function, dataset_path, timeout=300
+):
     """
     Benchmark a tool's processing time and save the result.
 
@@ -214,8 +226,9 @@ def benchmark_tool(tool_name, dataset_size, processing_function, dataset_path, t
     else:
         results_df.to_csv(RESULTS_FILE, index=False)
 
-    print(f"{tool_name} completed on {dataset_size} dataset: {result_dict['Processing Time (s)']}.")
-
+    print(
+        f"{tool_name} completed on {dataset_size} dataset: {result_dict['Processing Time (s)']}."
+    )
 
 
 if __name__ == "__main__":
@@ -225,13 +238,13 @@ if __name__ == "__main__":
 
     # Paths to datasets
     datasets = {
-        "10K":  Path("data/measurements10K.txt"),
+        "10K": Path("data/measurements10K.txt"),
         "100K": Path("data/measurements100K.txt"),
-        "1M":   Path("data/measurements1M.txt"),
-        "2M":   Path("data/measurements2M.txt"),
-        "3M":   Path("data/measurements3M.txt"),
-        "10M":  Path("data/measurements10M.txt"),
-        "100M": Path("data/measurements100M.txt")
+        "1M": Path("data/measurements1M.txt"),
+        "2M": Path("data/measurements2M.txt"),
+        "3M": Path("data/measurements3M.txt"),
+        "10M": Path("data/measurements10M.txt"),
+        "100M": Path("data/measurements100M.txt"),
     }
 
     # Benchmark each tool with each dataset

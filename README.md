@@ -13,9 +13,11 @@ Configuring the development environment to use the libs:
 
 **black**
 - lib focusing on code formatting in Python;
+- unlike flake8 which only suggests changes, lib black makes the changes;
 
 **isort**
-- isort is a Python utility / library to sort imports alphabetically and automatically separate into sections and by type
+- isort is a Python utility / library to sort imports alphabetically and automatically separate into sections and by type;
+- unlike flake8 which only suggests changes, lib isort makes the changes;
 
 **flake8**
 - is a Python library and command-line tool for enforcing style and improving code quality. It combines multiple tools into a single framework;
@@ -49,3 +51,15 @@ poetry run flake8
     - F401 'pyspark.sql.SparkSession' imported but unused
     - E302 expected 2 blank lines, found 1
     - W293 blank line contains whitespace
+
+**3.2. Install black lib**
+```bash
+poetry add black
+poetry run black main.py
+```
+
+**3.3. Install isort lib**
+```bash
+poetry add isort
+poetry run black main.py
+```
